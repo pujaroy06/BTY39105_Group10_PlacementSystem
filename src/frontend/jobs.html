@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<h2>
+    {% if session.get('role') == 'student' %}
+        Jobs You're Eligible For
+    {% else %}
+        All Posted Jobs
+    {% endif %}
+</h2>
+
+{% if jobs %}
+<div class="card-grid">
+    {% for job in jobs %}
+    <div class="card">
+        <h3 style="margin-top: 0;">{{ job.job_title }}</h3>
+        <p style="color: var(--color-muted); margin: 0.2rem 0;">
+            {{ job.company_name }} &middot; {{ job.location }}
+        </p>
+        <p><strong>&#8377;{{ job.package_lpa }} LPA</strong></p>
+        <p style="font-size: 0.85rem; color: var(--color-muted);">
+            Deadline: {{ job.application_deadline }}
+        </p>
+
+        {% if session.get('role') == 'admin' %}
+            <span class="badge {% if job.status == 'Open' %}badge-selected{% else %}badge-rejected{% endif %}">
+                {{ job.status }}
+            </span>
+        {% endif %}
+
+        <div style="margin-top: 0.75rem;">
+            <a href="{{ url_for('job_routes.job_detail', job_id=job.job_id) }}" class="btn">View Details</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p>
+        {% if session.get('role') == 'student' %}
+            No eligible jobs found right now. Check back later, or make sure your academic records are up to date.
+        {% else %}
+            No jobs have been posted yet.
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endblock %}
