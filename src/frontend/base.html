@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Placement Portal{% endblock %} - Group 10</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar-brand">
+            <a href="{{ url_for('auth_routes.login_page') }}">Placement Portal</a>
+        </div>
+
+        <nav class="navbar-links">
+            {% if session.get('role') == 'student' %}
+                <a href="{{ url_for('job_routes.list_jobs') }}">Jobs</a>
+                <a href="{{ url_for('application_routes.my_applications') }}">My Applications</a>
+                <span class="navbar-user">Hi, {{ session.get('name') }}</span>
+                <a href="{{ url_for('auth_routes.logout') }}" class="btn-logout">Logout</a>
+            {% elif session.get('role') == 'admin' %}
+                <a href="{{ url_for('dashboard_routes.admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_routes.add_job') }}">Post Job</a>
+                <a href="{{ url_for('admin_routes.add_company') }}">Add Company</a>
+                <a href="{{ url_for('admin_routes.view_applications') }}">Applications</a>
+                <span class="navbar-user">Hi, {{ session.get('name') }}</span>
+                <a href="{{ url_for('auth_routes.logout') }}" class="btn-logout">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth_routes.login_page') }}">Login</a>
+                <a href="{{ url_for('auth_routes.register_page') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="page-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>Group 10 &middot; University Placement and Recruitment Management System &middot; BTY39105</p>
+    </footer>
+
+</body>
+</html>

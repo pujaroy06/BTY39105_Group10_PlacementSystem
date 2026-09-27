@@ -1,0 +1,239 @@
+/* ============================================================
+   Group 10: University Placement and Recruitment Management System
+   style.css - shared styling for all pages
+   Member 6 Deliverable - Phase VIII (Website Development)
+   ============================================================ */
+
+:root {
+    --color-primary: #2c5aa0;
+    --color-primary-dark: #1e3f73;
+    --color-accent: #2e8b57;
+    --color-danger: #c0392b;
+    --color-bg: #f4f6f9;
+    --color-card: #ffffff;
+    --color-text: #222831;
+    --color-muted: #6b7280;
+    --radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+    background-color: var(--color-primary);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    flex-wrap: wrap;
+}
+
+.navbar-brand a {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.navbar-links a:hover {
+    text-decoration: underline;
+}
+
+.navbar-user {
+    color: #d7e3f5;
+    font-size: 0.9rem;
+}
+
+.btn-logout {
+    background-color: var(--color-danger);
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius);
+}
+
+/* ---------- Page content ---------- */
+.page-content {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ---------- Flash messages ---------- */
+.flash-messages {
+    margin-bottom: 1rem;
+}
+
+.flash-message {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+}
+
+/* ---------- Cards ---------- */
+.card {
+    background-color: var(--color-card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+/* ---------- Forms ---------- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 480px;
+}
+
+label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+input, select, textarea {
+    padding: 0.55rem;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+button, .btn {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+button:hover, .btn:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+    background-color: var(--color-muted);
+}
+
+/* ---------- Tables ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+th, td {
+    padding: 0.65rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+}
+
+th {
+    background-color: #eef2f7;
+    color: var(--color-primary-dark);
+}
+
+/* wide tables scroll horizontally instead of breaking the page layout */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* ---------- Status badges ---------- */
+.badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: white;
+    display: inline-block;
+}
+
+.badge-applied { background-color: #6b7280; }
+.badge-shortlisted { background-color: #d97706; }
+.badge-interviewed { background-color: #2563eb; }
+.badge-selected { background-color: var(--color-accent); }
+.badge-rejected { background-color: var(--color-danger); }
+
+/* ---------- Dashboard stat cards ---------- */
+.stat-card {
+    text-align: center;
+}
+
+.stat-card .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.stat-card .stat-label {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .navbar-links {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .page-content {
+        padding: 1rem;
+    }
+}
