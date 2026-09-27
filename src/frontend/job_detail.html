@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.job_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2 style="margin-top: 0;">{{ job.job_title }}</h2>
+    <p style="color: var(--color-muted);">{{ job.company_name }} &middot; {{ job.industry }} &middot; {{ job.location }}</p>
+
+    <table style="margin-top: 1rem;">
+        <tr><th>Package</th><td>&#8377;{{ job.package_lpa }} LPA</td></tr>
+        <tr><th>Job Type</th><td>{{ job.job_type }}</td></tr>
+        <tr><th>Positions Available</th><td>{{ job.positions_available }}</td></tr>
+        <tr><th>Posted Date</th><td>{{ job.posted_date }}</td></tr>
+        <tr><th>Application Deadline</th><td>{{ job.application_deadline }}</td></tr>
+        <tr><th>Status</th><td>{{ job.status }}</td></tr>
+    </table>
+
+    <p style="margin-top: 1rem;">{{ job.job_description }}</p>
+
+    {% if session.get('role') == 'student' %}
+        <form method="POST" action="{{ url_for('application_routes.apply_to_job', job_id=job.job_id) }}">
+            <button type="submit">Apply to this Job</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3 style="margin-top: 0;">Eligibility Rules</h3>
+    {% if eligibility_rules %}
+    <div class="table-wrapper">
+        <table>
+            <tr><th>Program</th><th>Minimum CGPA</th><th>Max Backlogs</th></tr>
+            {% for rule in eligibility_rules %}
+            <tr>
+                <td>{{ rule.program_name }}</td>
+                <td>{{ rule.min_cgpa }}</td>
+                <td>{{ rule.max_backlogs }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}
+        <p style="color: var(--color-muted);">No eligibility rules set for this job yet.</p>
+    {% endif %}
+</div>
+
+{% if session.get('role') == 'admin' %}
+<div class="card">
+    <h3 style="margin-top: 0;">Add Eligibility Rule</h3>
+    <form method="POST" action="{{ url_for('admin_routes.add_job_eligibility', job_id=job.job_id) }}">
+        <label for="program_id">Program</label>
+        <select id="program_id" name="program_id" required>
+            <option value="">-- Select program --</option>
+            {% for program in all_programs %}
+                <option value="{{ program.program_id }}">{{ program.program_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="min_cgpa">Minimum CGPA</label>
+        <input type="number" step="0.01" id="min_cgpa" name="min_cgpa" required>
+
+        <label for="max_backlogs">Maximum Backlogs Allowed</label>
+        <input type="number" id="max_backlogs" name="max_backlogs" value="0">
+
+        <button type="submit">Add Rule</button>
+    </form>
+</div>
+{% endif %}
+
+<a href="{{ url_for('job_routes.list_jobs') }}" class="btn btn-secondary">&larr; Back to Jobs</a>
+{% endblock %}

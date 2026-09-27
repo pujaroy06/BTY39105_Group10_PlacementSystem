@@ -87,6 +87,10 @@ def job_detail(job_id):
     )
     eligibility_rules = cursor.fetchall()
 
+    # needed for the admin's "add eligibility rule" dropdown on this page
+    cursor.execute("SELECT program_id, program_name FROM PROGRAM")
+    all_programs = cursor.fetchall()
+
     cursor.close()
     connection.close()
 
@@ -94,4 +98,9 @@ def job_detail(job_id):
         flash('Job not found.')
         return redirect(url_for('job_routes.list_jobs'))
 
-    return render_template('job_detail.html', job=job, eligibility_rules=eligibility_rules)
+    return render_template(
+        'job_detail.html',
+        job=job,
+        eligibility_rules=eligibility_rules,
+        all_programs=all_programs
+    )
