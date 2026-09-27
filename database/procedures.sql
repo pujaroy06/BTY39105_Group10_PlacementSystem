@@ -149,3 +149,78 @@ DELIMITER ;
 
 -- CALL sp_submit_application(9, 3, @res);
 -- SELECT @res AS result;
+
+DELIMITER $$
+
+-- ------------------------------------------------------------
+-- PROCEDURE 3: sp_generate_offer
+-- TRANSACTION DEMONSTRATION (Section 5 requirement: minimum 1)
+-- Wraps two related writes - inserting the OFFER row and
+-- updating the APPLICATION's status - inside one atomic
+-- transaction. If anything fails partway (for example, trying
+-- to generate a second offer for the same application, which
+-- violates the UNIQUE constraint on OFFER.application_id), the
+-- EXIT HANDLER rolls back BOTH writes, so the data never ends
+-- up half-updated.
+-- (Note: trg_after_offer_insert from triggers.sql would also
+-- update the application status automatically. The explicit
+-- UPDATE here is kept so the transaction's multi-step, all-or-
+-- nothing nature is clearly visible for demonstration purposes.)
+-- ------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_generate_offer$$
+CREATE PROCEDURE sp_generate_offer(
+    IN p_application_id INT,
+    IN p_package DECIMAL(5,2),
+    IN p_joining_date DATE,
+    OUT p_result_message VARCHAR(255)
+)
+BEGIN
+    DECLARE v_app_status VARCHAR(20);
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SET p_result_message = 'Transaction failed and was rolled back (an offer may already exist for this application).';
+    END;
+
+    START TRANSACTION;
+
+    SELECT status INTO v_app_status
+    FROM APPLICATION
+    WHERE application_id = p_application_id
+    FOR UPDATE;
+
+    IF v_app_status IS NULL THEN
+        SET p_result_message = 'Application not found.';
+        ROLLBACK;
+    ELSEIF v_app_status = 'Rejected' THEN
+        SET p_result_message = 'Cannot generate an offer for a rejected application.';
+        ROLLBACK;
+    ELSE
+        INSERT INTO OFFER (application_id, offer_date, package_offered_lpa, offer_status, joining_date)
+        VALUES (p_application_id, CURDATE(), p_package, 'Pending', p_joining_date);
+
+        UPDATE APPLICATION
+        SET status = 'Selected'
+        WHERE application_id = p_application_id;
+
+        COMMIT;
+        SET p_result_message = 'Offer generated successfully and application marked Selected.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- ------------------------------------------------------------
+-- HOW TO TEST
+-- ------------------------------------------------------------
+-- Success case: application_id 22 has no offer yet
+-- CALL sp_generate_offer(22, 4.10, '2026-08-15', @res);
+-- SELECT @res;
+
+-- Rollback case: application_id 2 ALREADY has an offer (see insert_data.sql)
+-- so this second attempt violates the UNIQUE constraint and rolls back
+-- CALL sp_generate_offer(2, 5.00, '2026-08-20', @res);
+-- SELECT @res;
+-- Expected: 'Transaction failed and was rolled back...'
+-- and OFFER table should NOT contain a second row for application_id 2
