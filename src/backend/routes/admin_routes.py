@@ -67,6 +67,17 @@ def add_job():
         flash('Admin access required.')
         return redirect(url_for('auth_routes.login_page'))
 
+    # fetch companies for the dropdown, so the admin picks a real
+    # company instead of typing a raw company_id number
+    connection = get_connection()
+    companies = []
+    if connection is not None:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT company_id, company_name FROM COMPANY")
+        companies = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
     if request.method == 'POST':
         company_id = request.form.get('company_id')
         job_title = request.form.get('job_title')
@@ -81,7 +92,7 @@ def add_job():
         if not all([company_id, job_title, package_lpa, job_type, positions_available,
                     posted_date, application_deadline]):
             flash('Please fill in all required job fields.')
-            return render_template('admin.html')
+            return render_template('admin.html', companies=companies)
 
         connection = get_connection()
         cursor = connection.cursor()
@@ -97,10 +108,10 @@ def add_job():
         cursor.close()
         connection.close()
 
-        flash('Job posted successfully. Add eligibility rules for it next.')
+        flash('Job posted successfully. Add eligibility rules for it from the Jobs page.')
         return redirect(url_for('admin_routes.add_job'))
 
-    return render_template('admin.html')
+    return render_template('admin.html', companies=companies)
 
 
 @admin_routes.route('/admin/jobs/<int:job_id>/eligibility', methods=['POST'])

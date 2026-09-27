@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h3 style="margin-top: 0;">Add Company</h3>
+    <form method="POST" action="{{ url_for('admin_routes.add_company') }}">
+        <label for="company_name">Company Name</label>
+        <input type="text" id="company_name" name="company_name" required>
+
+        <label for="industry">Industry</label>
+        <input type="text" id="industry" name="industry">
+
+        <label for="website">Website</label>
+        <input type="text" id="website" name="website">
+
+        <label for="contact_email">Contact Email</label>
+        <input type="email" id="contact_email" name="contact_email" required>
+
+        <label for="contact_phone">Contact Phone</label>
+        <input type="text" id="contact_phone" name="contact_phone">
+
+        <button type="submit">Add Company</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-top: 0;">Post a New Job</h3>
+    <form method="POST" action="{{ url_for('admin_routes.add_job') }}">
+        <label for="company_id">Company</label>
+        <select id="company_id" name="company_id" required>
+            <option value="">-- Select company --</option>
+            {% for c in companies %}
+                <option value="{{ c.company_id }}">{{ c.company_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="job_title">Job Title</label>
+        <input type="text" id="job_title" name="job_title" required>
+
+        <label for="job_description">Job Description</label>
+        <textarea id="job_description" name="job_description" rows="3"></textarea>
+
+        <label for="package_lpa">Package (LPA)</label>
+        <input type="number" step="0.01" id="package_lpa" name="package_lpa" required>
+
+        <label for="job_type">Job Type</label>
+        <select id="job_type" name="job_type" required>
+            <option value="Full-time">Full-time</option>
+            <option value="Internship">Internship</option>
+        </select>
+
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location">
+
+        <label for="positions_available">Positions Available</label>
+        <input type="number" id="positions_available" name="positions_available" required>
+
+        <label for="posted_date">Posted Date</label>
+        <input type="date" id="posted_date" name="posted_date" required>
+
+        <label for="application_deadline">Application Deadline</label>
+        <input type="date" id="application_deadline" name="application_deadline" required>
+
+        <button type="submit">Post Job</button>
+    </form>
+</div>
+
+{% if applications is defined and applications %}
+<div class="card">
+    <h3 style="margin-top: 0;">Manage Applications</h3>
+    <div class="table-wrapper">
+    <table>
+        <tr>
+            <th>ID</th><th>Student</th><th>Job</th><th>Company</th>
+            <th>Applied On</th><th>Status</th><th>Actions</th>
+        </tr>
+        {% for app in applications %}
+        <tr>
+            <td>{{ app.application_id }}</td>
+            <td>{{ app.student_name }}</td>
+            <td>{{ app.job_title }}</td>
+            <td>{{ app.company_name }}</td>
+            <td>{{ app.application_date }}</td>
+            <td>{{ app.status }}</td>
+            <td>
+                <details>
+                <summary>Update</summary>
+
+                <form method="POST" action="{{ url_for('admin_routes.update_application_status', application_id=app.application_id) }}">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="Applied">Applied</option>
+                        <option value="Shortlisted">Shortlisted</option>
+                        <option value="Interviewed">Interviewed</option>
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <button type="submit" class="btn-secondary">Save Status</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('admin_routes.add_test_result', application_id=app.application_id) }}">
+                    <label>Test Date</label>
+                    <input type="date" name="test_date">
+                    <label>Score</label>
+                    <input type="number" step="0.01" name="test_score">
+                    <label>Max Score</label>
+                    <input type="number" step="0.01" name="max_score">
+                    <label>Result</label>
+                    <select name="result_status">
+                        <option value="Pass">Pass</option>
+                        <option value="Fail">Fail</option>
+                    </select>
+                    <button type="submit" class="btn-secondary">Save Test Result</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('admin_routes.add_interview', application_id=app.application_id) }}">
+                    <label>Interview Date</label>
+                    <input type="date" name="interview_date">
+                    <label>Mode</label>
+                    <select name="interview_mode">
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                    <label>Interviewer Name</label>
+                    <input type="text" name="interviewer_name">
+                    <label>Feedback</label>
+                    <input type="text" name="feedback">
+                    <button type="submit" class="btn-secondary">Save Interview</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('admin_routes.generate_offer', application_id=app.application_id) }}">
+                    <label>Package Offered (LPA)</label>
+                    <input type="number" step="0.01" name="package_offered_lpa">
+                    <label>Joining Date</label>
+                    <input type="date" name="joining_date">
+                    <button type="submit">Generate Offer</button>
+                </form>
+
+                </details>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+</div>
+{% endif %}
+
+<a href="{{ url_for('admin_routes.view_applications') }}" class="btn btn-secondary">View All Applications</a>
+
+{% endblock %}
