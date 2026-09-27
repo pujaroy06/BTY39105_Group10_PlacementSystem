@@ -1,0 +1,124 @@
+"""
+routes/auth_routes.py
+Group 10: University Placement and Recruitment Management System
+
+Handles student registration, student login, admin login, and logout.
+
+Design note: our schema does not include a separate ADMIN table (it was
+not one of the 10 suggested core tables for this project), so the single
+placement-officer/admin account is authenticated against credentials
+stored in environment variables instead of a database table. Students
+are authenticated against the real STUDENT table.
+Member 5 Deliverable - Phase VIII (Website Development)
+"""
+
+import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from db_connection import get_connection
+
+auth_routes = Blueprint('auth_routes', __name__)
+
+
+@auth_routes.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # --- Check admin login first ---
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        admin_password = os.environ.get('ADMIN_PASSWORD')
+        if email == admin_email and password == admin_password:
+            session['role'] = 'admin'
+            session['name'] = 'Placement Officer'
+            return redirect(url_for('dashboard_routes.admin_dashboard'))
+
+        # --- Otherwise check student login against STUDENT table ---
+        connection = get_connection()
+        if connection is None:
+            flash('Could not connect to the database. Please try again later.')
+            return render_template('login.html')
+
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT student_id, name, password_hash FROM STUDENT WHERE email = %s",
+            (email,)
+        )
+        student = cursor.fetchone()
+        cursor.close()
+        connection.close()
+
+        if student and check_password_hash(student['password_hash'], password):
+            session['role'] = 'student'
+            session['student_id'] = student['student_id']
+            session['name'] = student['name']
+            return redirect(url_for('job_routes.list_jobs'))
+        else:
+            flash('Invalid email or password.')
+            return render_template('login.html')
+
+    return render_template('login.html')
+
+
+@auth_routes.route('/register', methods=['GET', 'POST'])
+def register_page():
+    # fetch the list of programs so the form can show a dropdown
+    # (CSE, CSE-AIML, IT, ECE) instead of the student typing a raw ID
+    connection = get_connection()
+    programs = []
+    if connection is not None:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT program_id, program_name FROM PROGRAM")
+        programs = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        dob = request.form.get('dob')
+        program_id = request.form.get('program_id')
+        enrollment_year = request.form.get('enrollment_year')
+        password = request.form.get('password')
+
+        # basic input validation - required fields must not be empty
+        if not all([name, email, program_id, enrollment_year, password]):
+            flash('Please fill in all required fields.')
+            return render_template('register.html', programs=programs)
+
+        hashed_password = generate_password_hash(password)
+
+        connection = get_connection()
+        if connection is None:
+            flash('Could not connect to the database. Please try again later.')
+            return render_template('register.html', programs=programs)
+
+        try:
+            cursor = connection.cursor()
+            cursor.execute(
+                """INSERT INTO STUDENT
+                   (program_id, name, email, phone, dob, enrollment_year, password_hash)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (program_id, name, email, phone, dob, enrollment_year, hashed_password)
+            )
+            connection.commit()
+            cursor.close()
+            flash('Registration successful. Please log in.')
+            return redirect(url_for('auth_routes.login_page'))
+        except Exception:
+            connection.rollback()
+            # most likely cause: the UNIQUE constraint on STUDENT.email
+            flash('Registration failed - that email may already be registered.')
+            return render_template('register.html', programs=programs)
+        finally:
+            connection.close()
+
+    return render_template('register.html', programs=programs)
+
+
+@auth_routes.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('auth_routes.login_page'))
