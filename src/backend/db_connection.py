@@ -41,12 +41,20 @@ def get_connection():
 def call_procedure(procedure_name, args):
     """
     Helper function to call a MySQL stored procedure that has
-    OUT parameters (like sp_check_eligibility or sp_submit_application)
-    and return the OUT values as a list.
+    OUT parameters (like sp_check_eligibility, sp_submit_application,
+    or sp_generate_offer).
+
+    Important detail: mysql-connector-python returns OUT/INOUT
+    parameter values through the TUPLE that callproc() itself
+    returns - not through cursor.stored_results() (that method is
+    only for SELECT result sets a procedure produces, which none
+    of ours do). So the value returned here is the same length as
+    `args`, with the OUT parameter slots filled in by the procedure.
 
     Example:
-        result = call_procedure('sp_submit_application', [9, 3])
-        # result[-1] holds the value of the OUT parameter
+        # sp_submit_application(IN student_id, IN job_id, OUT message)
+        result = call_procedure('sp_submit_application', (9, 3, ''))
+        message = result[2]   # the OUT parameter's final value
     """
     connection = get_connection()
     if connection is None:
@@ -54,17 +62,10 @@ def call_procedure(procedure_name, args):
 
     try:
         cursor = connection.cursor()
-        cursor.callproc(procedure_name, args)
-
-        # stored procedure OUT parameters come back through
-        # cursor.stored_results()
-        results = []
-        for result in cursor.stored_results():
-            results.extend(result.fetchall())
-
+        result_args = cursor.callproc(procedure_name, args)
         connection.commit()
         cursor.close()
-        return results
+        return result_args
     except Error as e:
         print(f"Procedure call failed: {e}")
         return None
