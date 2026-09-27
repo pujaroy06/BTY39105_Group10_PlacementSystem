@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<h2>My Applications</h2>
+
+{% if applications %}
+<div class="table-wrapper">
+<table>
+    <tr><th>Job Title</th><th>Company</th><th>Applied On</th><th>Status</th></tr>
+    {% for app in applications %}
+    {% if app.status == 'Applied' %}{% set badge_class = 'badge-applied' %}
+    {% elif app.status == 'Shortlisted' %}{% set badge_class = 'badge-shortlisted' %}
+    {% elif app.status == 'Interviewed' %}{% set badge_class = 'badge-interviewed' %}
+    {% elif app.status == 'Selected' %}{% set badge_class = 'badge-selected' %}
+    {% elif app.status == 'Rejected' %}{% set badge_class = 'badge-rejected' %}
+    {% endif %}
+    <tr>
+        <td>{{ app.job_title }}</td>
+        <td>{{ app.company_name }}</td>
+        <td>{{ app.application_date }}</td>
+        <td><span class="badge {{ badge_class }}">{{ app.status }}</span></td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% else %}
+<div class="card">
+    <p>You haven't applied to any jobs yet. <a href="{{ url_for('job_routes.list_jobs') }}">Browse eligible jobs</a>.</p>
+</div>
+{% endif %}
+{% endblock %}
