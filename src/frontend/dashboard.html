@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Placement Dashboard{% endblock %}
+
+{% block content %}
+<h2>Placement Dashboard</h2>
+
+<div class="card-grid">
+    <div class="card stat-card">
+        <div class="stat-number">{{ total_placed|default(0) }}</div>
+        <div class="stat-label">Students Placed</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-number">
+            {% if avg_package %}&#8377;{{ '%.2f'|format(avg_package) }}L{% else %}&#8377;0.00L{% endif %}
+        </div>
+        <div class="stat-label">Average Package (Accepted Offers)</div>
+    </div>
+</div>
+
+<div class="card-grid">
+    <div class="card">
+        <h3 style="margin-top: 0;">Placements by Company</h3>
+        {% if company_wise %}
+        <div class="table-wrapper">
+        <table>
+            <tr><th>Company</th><th>Students Placed</th></tr>
+            {% for row in company_wise %}
+            <tr><td>{{ row.company_name }}</td><td>{{ row.placed_count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+            <p style="color: var(--color-muted);">No accepted offers yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top: 0;">Placements by Branch</h3>
+        {% if branch_wise %}
+        <div class="table-wrapper">
+        <table>
+            <tr><th>Program</th><th>Students Placed</th></tr>
+            {% for row in branch_wise %}
+            <tr><td>{{ row.program_name }}</td><td>{{ row.placed_count }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+            <p style="color: var(--color-muted);">No accepted offers yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top: 0;">Application Pipeline</h3>
+        {% if application_status_counts %}
+        <div class="table-wrapper">
+        <table>
+            <tr><th>Status</th><th>Applications</th></tr>
+            {% for row in application_status_counts %}
+            <tr><td>{{ row.status }}</td><td>{{ row.total }}</td></tr>
+            {% endfor %}
+        </table>
+        </div>
+        {% else %}
+            <p style="color: var(--color-muted);">No applications yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-top: 0;">All Placements</h3>
+    {% if placements %}
+    <div class="table-wrapper">
+    <table>
+        <tr>
+            <th>Student</th><th>Program</th><th>Company</th><th>Job</th>
+            <th>Package (LPA)</th><th>Offer Status</th><th>Joining Date</th>
+        </tr>
+        {% for p in placements %}
+        <tr>
+            <td>{{ p.student_name }}</td>
+            <td>{{ p.program_name }}</td>
+            <td>{{ p.company_name }}</td>
+            <td>{{ p.job_title }}</td>
+            <td>{{ p.package_offered_lpa }}</td>
+            <td>{{ p.offer_status }}</td>
+            <td>{{ p.joining_date if p.joining_date else '-' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+    {% else %}
+        <p style="color: var(--color-muted);">No offers have been generated yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
